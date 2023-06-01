@@ -1,0 +1,43 @@
+---
+include:
+  - local: .gitlab/ci/helm.gitlab-ci.yml
+  - local: .gitlab/ci/badges.gitlab-ci.yml
+  - local: .gitlab/ci/templates.gitlab-ci.yml
+    rules:
+      - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+default:
+  services: []
+
+stages:
+  - external
+  - test
+  - release
+  - publish
+
+variables:
+  TZ: Europe/Prague
+
+  GIT_DEPTH: 1
+  GIT_STRATEGY: fetch
+  GIT_SSL_NO_VERIFY: "true"
+
+  FF_USE_FASTZIP: "true"
+
+  USU_CI_DOCKER_REGISTRY: docker.devops.usu.group
+  USU_CI_DOCKER_IMG_NAME: "$USU_CI_DOCKER_REGISTRY/valuemation/vmx/vmx-core-service"
+  USU_HELM_CHART_DIRECTORY: "charts/vmx-core-service"
+  HELM_CHART_PATH: $USU_HELM_CHART_DIRECTORY
+  USU_CI_HELM_REGISTRY_URL: https://helm.devops.usu.group/repository/helm-$CI_PROJECT_ROOT_NAMESPACE/
+  USU_CI_USU_SHARED_HELM_REGISTRY_URL: https://helm.devops.usu.group/repository/helm-usu-shared/
+
+  HELM_AUTO_CI: "true"
+
+console:
+  stage: external
+  extends:
+    - .image.helm
+  script: ["export; while true; do sleep infinity; done"]
+  rules:
+    - if: $DEBUG_CONSOLE
+      when: always
